@@ -11,15 +11,15 @@ QWidget {
     background-color: #1a1a1a;
     color: #cccccc;
     font-family: 'Segoe UI', sans-serif;
-    font-size: 12px;
+    font-size: 15px;
 }
 QPushButton {
     background-color: #2a2a2a;
     color: #cccccc;
     border: 1px solid #444444;
-    padding: 6px 14px;
+    padding: 10px 18px;
     border-radius: 3px;
-    min-height: 28px;
+    min-height: 36px;
 }
 QPushButton:hover    { background-color: #383838; }
 QPushButton:pressed  { background-color: #505050; }
@@ -28,9 +28,9 @@ QGroupBox {
     color: #777777;
     border: 1px solid #383838;
     border-radius: 4px;
-    margin-top: 10px;
-    padding: 8px;
-    font-size: 11px;
+    margin-top: 12px;
+    padding: 10px;
+    font-size: 13px;
 }
 QGroupBox::title {
     subcontrol-origin: margin;

@@ -14,6 +14,8 @@ class MatchClock(QObject):
 
     HALF_1_END = 45 * 60   # 2700
     HALF_2_END = 90 * 60   # 5400
+    ET_1_END   = 105 * 60  # 6300
+    ET_2_END   = 120 * 60  # 7200
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -29,7 +31,8 @@ class MatchClock(QObject):
         self._seconds += 1
         self.tick.emit(self._seconds)
         if not self._auto_stopped:
-            if self._seconds in (self.HALF_1_END, self.HALF_2_END):
+            if self._seconds in (self.HALF_1_END, self.HALF_2_END,
+                                 self.ET_1_END, self.ET_2_END):
                 self._auto_stopped = True
                 self._timer.stop()
                 self.half_ended.emit(self._seconds)
