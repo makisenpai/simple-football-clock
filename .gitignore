@@ -1,0 +1,22 @@
+# Build output
+dist/
+build/
+*.spec.bak
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+.env
+.venv
+env/
+venv/
+
+# VS Code
+.vscode/
+
+# OS
+Thumbs.db
+.DS_Store
