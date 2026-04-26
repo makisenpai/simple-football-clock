@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import shutil
 import sys
 
 from PyQt6.QtWidgets import (
@@ -298,27 +299,45 @@ class ControlWindow(QMainWindow):
         self.display.update_score(*self._score)
 
     @staticmethod
-    def _logos_dir() -> str:
-        """Return the logos folder path.
+    def _user_logos_dir() -> str:
+        """Persistent per-user logos folder in %APPDATA%.
 
-        When running as a frozen PyInstaller bundle, prefer a 'logos'
-        folder sitting next to the .exe so users can drop images there
-        without touching the _internal bundle.  Fall back to the bundled
-        folder (or the source-tree folder when running from source).
+        This folder survives the exe being moved or re-downloaded.
+        On first run, bundled logos are copied here automatically.
         """
+        folder = os.path.join(
+            os.environ.get("APPDATA", os.path.expanduser("~")),
+            "SportsClockApp", "logos",
+        )
+        os.makedirs(folder, exist_ok=True)
+        return folder
+
+    @staticmethod
+    def _bundled_logos_dir() -> str | None:
+        """Return the bundled logos dir (inside the frozen bundle or source tree)."""
         if getattr(sys, 'frozen', False):
-            # next to the .exe
-            ext = os.path.join(os.path.dirname(sys.executable), "logos")
-            if os.path.isdir(ext):
-                return ext
-            # fallback: bundled copy inside _internal
-            return os.path.join(sys._MEIPASS, "logos")  # type: ignore[attr-defined]
-        # running from source
-        return os.path.join(os.path.dirname(os.path.abspath(__file__)), "logos")
+            path = os.path.join(sys._MEIPASS, "logos")  # type: ignore[attr-defined]
+        else:
+            path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logos")
+        return path if os.path.isdir(path) else None
+
+    def _ensure_logos_seeded(self) -> None:
+        """Copy bundled logos into the user folder if they aren't there yet."""
+        bundled = self._bundled_logos_dir()
+        if not bundled:
+            return
+        user_dir = self._user_logos_dir()
+        for fname in os.listdir(bundled):
+            dest = os.path.join(user_dir, fname)
+            if not os.path.exists(dest):
+                try:
+                    shutil.copy2(os.path.join(bundled, fname), dest)
+                except OSError:
+                    pass
 
     def _change_logo(self, team_idx: int):
-        logos_dir = self._logos_dir()
-        os.makedirs(logos_dir, exist_ok=True)
+        self._ensure_logos_seeded()
+        logos_dir = self._user_logos_dir()
         path, _ = QFileDialog.getOpenFileName(
             self,
             f"Select Logo for Team {team_idx + 1}",
