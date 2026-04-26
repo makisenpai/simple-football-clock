@@ -12,6 +12,7 @@ a = Analysis(
     binaries=[],
     datas=[
         ('logos', 'logos'),          # bundle the logos folder
+        ('assets/icon.ico', 'assets'),
     ],
     hiddenimports=[
         'PyQt6.sip',
@@ -66,7 +67,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=None,              # set to 'assets/icon.ico' if you have one
+    icon='assets/icon.ico',
 )
 
 coll = COLLECT(

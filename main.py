@@ -1,5 +1,7 @@
+import os
 import sys
 
+from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QApplication
 
 from display_window import DisplayWindow
@@ -47,6 +49,15 @@ def main():
     app = QApplication(sys.argv)
     app.setStyle("Fusion")           # consistent look across Windows versions
     app.setStyleSheet(DARK_THEME)
+
+    # ── App icon (taskbar + title bar) ────────────────────────────────
+    if getattr(sys, 'frozen', False):
+        base = sys._MEIPASS  # type: ignore[attr-defined]
+    else:
+        base = os.path.dirname(os.path.abspath(__file__))
+    icon_path = os.path.join(base, "assets", "icon.ico")
+    if os.path.exists(icon_path):
+        app.setWindowIcon(QIcon(icon_path))
 
     screens = app.screens()
     primary   = screens[0]

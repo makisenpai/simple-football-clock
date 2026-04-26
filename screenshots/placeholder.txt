@@ -1,2 +1,0 @@
-Place a screenshot of the scoreboard here named `scoreboard.png`.
-It will be shown in the README.
