@@ -13,6 +13,7 @@ from PyQt6.QtGui import QFont
 
 from scoreboard_widget import ScoreboardWidget
 from clock import MatchClock
+from utils import parse_time_input, settings_path, load_logo_settings, save_logo_settings
 
 
 class ControlWindow(QMainWindow):
@@ -36,6 +37,7 @@ class ControlWindow(QMainWindow):
         self.clock.half_ended.connect(self._on_half_ended)
 
         self._build_ui()
+        self._load_settings()
 
     # ── UI construction ───────────────────────────────────────────────
 
@@ -165,7 +167,7 @@ class ControlWindow(QMainWindow):
         for i in range(2):
             col = QVBoxLayout()
             col.setAlignment(Qt.AlignmentFlag.AlignTop)
-            col.setSpacing(6)
+            col.setSpacing(10)
 
             title = QLabel(f"Team {i + 1}")
             title.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -215,13 +217,34 @@ class ControlWindow(QMainWindow):
         return grp
 
     def _make_display_group(self) -> QGroupBox:
-        """Small group with a button to bring back the display window."""
         grp = QGroupBox("Display Window")
-        row = QHBoxLayout(grp)
+        layout = QVBoxLayout(grp)
+        layout.setSpacing(6)
+
+        # show / hide
         btn_show = QPushButton("Show Display Window")
         btn_show.clicked.connect(self._show_display)
-        row.addWidget(btn_show)
-        row.addStretch()
+        layout.addWidget(btn_show)
+
+        # display mode row
+        mode_row = QHBoxLayout()
+        self.btn_blackout = QPushButton("⬛  Black Screen")
+        btn_home_logo     = QPushButton("Home Logo")
+        btn_away_logo     = QPushButton("Away Logo")
+        btn_scoreboard    = QPushButton("◀  Scoreboard")
+
+        self.btn_blackout.setCheckable(True)
+        self.btn_blackout.clicked.connect(self._toggle_blackout)
+        btn_home_logo.clicked.connect(lambda: self._set_display_mode("logo", 0))
+        btn_away_logo.clicked.connect(lambda: self._set_display_mode("logo", 1))
+        btn_scoreboard.clicked.connect(lambda: self._set_display_mode("normal"))
+
+        for btn in (self.btn_blackout, btn_home_logo, btn_away_logo, btn_scoreboard):
+            btn.setFixedHeight(34)
+            btn.setStyleSheet("font-size: 13px;")
+            mode_row.addWidget(btn)
+
+        layout.addLayout(mode_row)
         return grp
 
     # ── clock event handlers ──────────────────────────────────────────
@@ -248,11 +271,7 @@ class ControlWindow(QMainWindow):
     def _set_custom_time(self):
         text = self.time_input.text().strip()
         try:
-            if ":" in text:
-                parts = text.split(":")
-                seconds = int(parts[0]) * 60 + int(parts[1])
-            else:
-                seconds = int(text)
+            seconds = parse_time_input(text)
             self.clock.set_time(seconds)
             self._refresh_clock_buttons()
             m, s = divmod(seconds, 60)
@@ -348,9 +367,40 @@ class ControlWindow(QMainWindow):
             self._logo_paths[team_idx] = path
             self.preview.update_logo(team_idx, path)
             self.display.update_logo(team_idx, path)
+            self._save_settings()
 
     # ── display window helper ─────────────────────────────────────────
 
     def _show_display(self):
         self.display.show()
         self.display.raise_()
+
+    def closeEvent(self, event):
+        self.display.close()
+        super().closeEvent(event)
+
+    def _toggle_blackout(self):
+        if self.btn_blackout.isChecked():
+            self.display.set_mode("black")
+        else:
+            self.display.set_mode("normal")
+
+    def _set_display_mode(self, mode: str, solo_idx: int = 0):
+        self.btn_blackout.setChecked(False)
+        self.display.set_mode(mode, solo_idx)
+
+    # ── settings persistence ──────────────────────────────────────────
+
+    def _load_settings(self):
+        logos = load_logo_settings(settings_path())
+        for i, path in enumerate(logos):
+            if path and os.path.exists(path):
+                self._logo_paths[i] = path
+                self.preview.update_logo(i, path)
+                self.display.update_logo(i, path)
+
+    def _save_settings(self):
+        try:
+            save_logo_settings(settings_path(), self._logo_paths)
+        except OSError:
+            pass

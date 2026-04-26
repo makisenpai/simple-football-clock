@@ -39,3 +39,6 @@ class DisplayWindow(QMainWindow):
 
     def update_logo(self, team_idx: int, path: str | None):
         self.canvas.update_logo(team_idx, path)
+
+    def set_mode(self, mode: str, solo_idx: int = 0):
+        self.canvas.set_mode(mode, solo_idx)

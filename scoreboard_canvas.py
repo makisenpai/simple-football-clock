@@ -16,6 +16,8 @@ class ScoreboardCanvas(QWidget):
         self._clock_text = "00:00"
         self._logo_paths: list[str | None] = [None, None]
         self._logos: list[QPixmap | None] = [None, None]
+        self._mode: str = "normal"   # "normal" | "black" | "logo"
+        self._solo_idx: int = 0      # which logo to show in "logo" mode
 
     # ── public update API ─────────────────────────────────────────────
 
@@ -36,6 +38,15 @@ class ScoreboardCanvas(QWidget):
             self._logos[team_idx] = None
         self.update()
 
+    def set_mode(self, mode: str, solo_idx: int = 0):
+        """Switch display mode.
+        mode: 'normal' | 'black' | 'logo'
+        solo_idx: team index (0 or 1) when mode == 'logo'
+        """
+        self._mode = mode
+        self._solo_idx = solo_idx
+        self.update()
+
     # ── painting ──────────────────────────────────────────────────────
 
     def paintEvent(self, event):
@@ -47,6 +58,37 @@ class ScoreboardCanvas(QWidget):
         p = QPainter(self)
         p.setRenderHint(QPainter.RenderHint.Antialiasing)
         p.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
+
+        # ── black screen mode ────────────────────────────────────────
+        if self._mode == "black":
+            p.fillRect(0, 0, w, h, QColor(0, 0, 0))
+            p.end()
+            return
+
+        # ── single logo mode ─────────────────────────────────────────
+        if self._mode == "logo":
+            p.fillRect(0, 0, w, h, QColor(0, 0, 0))
+            pm = self._logos[self._solo_idx]
+            if pm and not pm.isNull():
+                max_size = int(min(w, h) * 0.85)
+                scaled = pm.scaled(
+                    max_size, max_size,
+                    Qt.AspectRatioMode.KeepAspectRatio,
+                    Qt.TransformationMode.SmoothTransformation,
+                )
+                px = (w - scaled.width()) // 2
+                py = (h - scaled.height()) // 2
+                p.drawPixmap(px, py, scaled)
+            else:
+                label = "H" if self._solo_idx == 0 else "B"
+                font = QFont("Courier New")
+                font.setPixelSize(int(min(w, h) * 0.5))
+                font.setBold(True)
+                p.setFont(font)
+                p.setPen(QColor(80, 80, 80))
+                p.drawText(QRect(0, 0, w, h), Qt.AlignmentFlag.AlignCenter, label)
+            p.end()
+            return
 
         # background
         p.fillRect(0, 0, w, h, QColor(0, 0, 0))
