@@ -26,14 +26,15 @@ jobs:
       - name: Build exe
         run: python -m PyInstaller sports_clock.spec --noconfirm --clean
 
-      - name: Create logos folder in dist
+      - name: Prepare release folder
         run: |
-          New-Item -ItemType Directory -Force dist\SportsClockApp\logos
-          Copy-Item logos\* dist\SportsClockApp\logos\ -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory -Force release\logos
+          Copy-Item dist\SportsClockApp.exe release\
+          Copy-Item logos\* release\logos\ -ErrorAction SilentlyContinue
         shell: pwsh
 
       - name: Zip release
-        run: Compress-Archive -Path dist\SportsClockApp\* -DestinationPath SportsClockApp.zip
+        run: Compress-Archive -Path release\* -DestinationPath SportsClockApp.zip
         shell: pwsh
 
       - name: Create GitHub Release

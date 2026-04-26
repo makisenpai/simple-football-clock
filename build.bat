@@ -28,21 +28,21 @@ if errorlevel 1 (
 )
 
 :: Create user-facing logos folder next to the .exe
-if not exist dist\SportsClockApp\logos (
-    mkdir dist\SportsClockApp\logos
-    echo Place your team logo images (.png .jpg .bmp .ico) in this folder. > dist\SportsClockApp\logos\README.txt
-    echo The app opens this folder when you click "Change Logo...". >> dist\SportsClockApp\logos\README.txt
+if not exist dist\logos (
+    mkdir dist\logos
+    echo Place your team logo images (.png .jpg .bmp .ico) in this folder. > dist\logos\README.txt
+    echo The app opens this folder when you click "Change Logo...". >> dist\logos\README.txt
 )
 
 echo.
 echo [3/3] Done!
 echo.
-echo Output folder:  dist\SportsClockApp\
-echo Run:            dist\SportsClockApp\SportsClockApp.exe
+echo Output file:  dist\SportsClockApp.exe
+echo Run:          dist\SportsClockApp.exe
 echo.
-echo Drop team logos into:  dist\SportsClockApp\logos\
+echo Drop team logos into:  dist\logos\
 echo.
-echo To share: zip the dist\SportsClockApp\ folder and send it.
+echo To share: copy dist\SportsClockApp.exe and the dist\logos\ folder together.
 echo No Python required on the target machine.
 echo.
 pause
